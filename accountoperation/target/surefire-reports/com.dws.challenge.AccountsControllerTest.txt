@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.dws.challenge.AccountsControllerTest
+-------------------------------------------------------------------------------
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.162 sec - in com.dws.challenge.AccountsControllerTest
