@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>AccountsController.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">accountoperation (14 Apr, 2018 8:18:49 AM)</a> &gt; <a href="../../index.html" class="el_group">accountoperation</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">com.dws.controller</a> &gt; <span class="el_source">AccountsController.java</span></div><h1>AccountsController.java</h1><pre class="source lang-java linenums">package com.dws.controller;
+
+import javax.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.dws.entity.Account;
+import com.dws.entity.AccountTransaction;
+import com.dws.exception.DuplicateAccountIdException;
+import com.dws.exception.InsufficientAmountException;
+import com.dws.exception.TransactionException;
+import com.dws.service.AccountsService;
+
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@RequestMapping(&quot;/v1/accounts&quot;)
+<span class="fc" id="L29">@Slf4j</span>
+public class AccountsController {
+<span class="fc" id="L31">	private static final Logger LOGGER = LoggerFactory.getLogger(AccountsController.class);</span>
+	private final AccountsService accountsService;
+
+	@Autowired
+<span class="fc" id="L35">	public AccountsController(AccountsService accountsService) {</span>
+<span class="fc" id="L36">		this.accountsService = accountsService;</span>
+<span class="fc" id="L37">	}</span>
+
+	/**
+	 * http://localhost:18080/dws/bank/v1/accounts
+	 * 
+	 * @param account
+	 * @return
+	 */
+	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity&lt;Object&gt; createAccount(@RequestBody @Valid Account account) {
+<span class="fc" id="L47">		LOGGER.info(&quot;Creating account {}&quot;, account);</span>
+
+		try {
+<span class="fc" id="L50">			this.accountsService.createAccount(account);</span>
+<span class="fc" id="L51">		} catch (DuplicateAccountIdException daie) {</span>
+<span class="fc" id="L52">			return new ResponseEntity&lt;&gt;(daie.getMessage(), HttpStatus.BAD_REQUEST);</span>
+<span class="fc" id="L53">		}</span>
+
+<span class="fc" id="L55">		return new ResponseEntity&lt;&gt;(HttpStatus.CREATED);</span>
+	}
+	/**
+	 * http://localhost:18080/dws/bank/v1/accounts/{accountId}
+	 * @param accountId
+	 * @return
+	 */
+	@GetMapping(path = &quot;/{accountId}&quot;)
+	public Account getAccount(@PathVariable String accountId) {
+<span class="fc" id="L64">		LOGGER.info(&quot;Retrieving account for id {}&quot;, accountId);</span>
+<span class="fc" id="L65">		return this.accountsService.getAccount(accountId);</span>
+	}
+	/**
+	 * http://localhost:18080/dws/bank/v1/accounts/transaction
+	 * @param accountTransaction
+	 * @return
+	 */
+	@PostMapping(path = &quot;/transaction&quot;, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity&lt;Object&gt;  transaction(@RequestBody @Valid AccountTransaction accountTransaction) {
+<span class="fc" id="L74">		LOGGER.info(&quot;Transaction start {}&quot;, accountTransaction);</span>
+		
+		try {
+<span class="fc" id="L77">			accountsService.transaction(accountTransaction);</span>
+<span class="fc" id="L78">		}catch (InsufficientAmountException re) {</span>
+<span class="fc" id="L79">			return new ResponseEntity&lt;&gt;(re.getMessage(), HttpStatus.BAD_REQUEST);</span>
+<span class="nc" id="L80">		} catch (TransactionException te) {</span>
+<span class="nc" id="L81">			return new ResponseEntity&lt;&gt;(te.getMessage(), HttpStatus.BAD_REQUEST);</span>
+<span class="fc" id="L82">		}</span>
+
+<span class="fc" id="L84">		return new ResponseEntity&lt;&gt;(HttpStatus.ACCEPTED);</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>accountoperation (14 Apr, 2018 8:18:49 AM)</div></body></html>

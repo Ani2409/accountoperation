@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>AccountsServiceTest.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">accountoperation (14 Apr, 2018 8:18:49 AM)</a> &gt; <a href="../../index.html" class="el_group">accountoperation</a> &gt; <a href="../index.html" class="el_bundle">src/test/java</a> &gt; <a href="index.source.html" class="el_package">com.dws.challenge</a> &gt; <span class="el_source">AccountsServiceTest.java</span></div><h1>AccountsServiceTest.java</h1><pre class="source lang-java linenums">package com.dws.challenge;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+
+import java.math.BigDecimal;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import com.dws.config.MyMVCConfig;
+import com.dws.entity.Account;
+import com.dws.entity.AccountTransaction;
+import com.dws.exception.DuplicateAccountIdException;
+import com.dws.exception.InsufficientAmountException;
+import com.dws.service.AccountsService;
+
+import io.vertx.ext.unit.TestOptions;
+import io.vertx.ext.unit.TestSuite;
+import io.vertx.ext.unit.report.ReportOptions;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes= {MyMVCConfig.class},webEnvironment=WebEnvironment.RANDOM_PORT)
+<span class="fc" id="L28">public class AccountsServiceTest {</span>
+
+  @Autowired
+  private AccountsService accountsService;
+
+  @Test
+  public void addAccount() throws Exception {
+<span class="fc" id="L35">    Account account = new Account(&quot;Id-001&quot;, new BigDecimal(1000));</span>
+<span class="fc" id="L36">    this.accountsService.createAccount(account);</span>
+
+<span class="fc" id="L38">    assertThat(this.accountsService.getAccount(&quot;Id-001&quot;)).isEqualTo(account);</span>
+<span class="fc" id="L39">  }</span>
+
+  @Test
+  public void addAccount_failsOnDuplicateId() throws Exception {
+<span class="fc" id="L43">    String uniqueId = &quot;Id-&quot; + System.currentTimeMillis();</span>
+<span class="fc" id="L44">    Account account = new Account(uniqueId);</span>
+<span class="fc" id="L45">    this.accountsService.createAccount(account);</span>
+
+    try {
+<span class="nc" id="L48">      this.accountsService.createAccount(account);</span>
+<span class="nc" id="L49">      fail(&quot;Should have failed when adding duplicate account&quot;);</span>
+<span class="fc" id="L50">    } catch (DuplicateAccountIdException ex) {</span>
+<span class="fc" id="L51">      assertThat(ex.getMessage()).isEqualTo(&quot;Account id &quot; + uniqueId + &quot; already exists!&quot;);</span>
+<span class="nc" id="L52">    }</span>
+
+<span class="fc" id="L54">  }</span>
+  @Test
+  public void testTransaction() throws Exception {
+<span class="fc" id="L57">	  Account account = new Account(&quot;Id-002&quot;, new BigDecimal(1000));</span>
+<span class="fc" id="L58">	  this.accountsService.createAccount(account);</span>
+<span class="fc" id="L59">	  account = new Account(&quot;Id-003&quot;, new BigDecimal(1000));</span>
+<span class="fc" id="L60">	  this.accountsService.createAccount(account);</span>
+<span class="fc" id="L61">	  AccountTransaction AccountTransaction = new AccountTransaction(&quot;Id-002&quot;,&quot;Id-003&quot;, new BigDecimal(500));</span>
+<span class="fc" id="L62">	  this.accountsService.transaction(AccountTransaction);</span>
+<span class="fc" id="L63">	  assertThat(this.accountsService.getAccountsRepository().getAccount(&quot;Id-002&quot;).getBalance()).isEqualByComparingTo(&quot;500&quot;);</span>
+<span class="fc" id="L64">	  assertThat(this.accountsService.getAccountsRepository().getAccount(&quot;Id-003&quot;).getBalance()).isEqualByComparingTo(&quot;1500&quot;);</span>
+<span class="fc" id="L65">  }</span>
+  
+  @Test
+  public void testTransactionInsufficientFund() throws Exception {
+<span class="fc" id="L69">	  Account drAccount=null;</span>
+<span class="fc" id="L70">	  Account crAccount=null;</span>
+  	  try {
+<span class="fc" id="L72">  		  drAccount = new Account(&quot;Id-004&quot;, new BigDecimal(1000));</span>
+<span class="fc" id="L73">		  this.accountsService.createAccount(drAccount);</span>
+<span class="fc" id="L74">		  crAccount = new Account(&quot;Id-005&quot;, new BigDecimal(1000));</span>
+<span class="fc" id="L75">		  this.accountsService.createAccount(crAccount);</span>
+<span class="fc" id="L76">		  AccountTransaction AccountTransaction = new AccountTransaction(&quot;Id-004&quot;,&quot;Id-005&quot;, new BigDecimal(1500));</span>
+<span class="nc" id="L77">		  this.accountsService.transaction(AccountTransaction);</span>
+		  
+<span class="fc" id="L79">  	  } catch (InsufficientAmountException ex) {</span>
+<span class="fc" id="L80">	      assertThat(ex.getMessage()).isEqualTo(&quot;Account id &quot;+ drAccount.getAccountId() +&quot; insufficiant amount!&quot;);</span>
+<span class="nc" id="L81">	    }</span>
+<span class="fc" id="L82">  }</span>
+  @Test
+  public void transactionTestSuit() {
+<span class="fc" id="L85">	  	Account account = new Account(&quot;Id-006&quot;, new BigDecimal(3000));</span>
+<span class="fc" id="L86">	    this.accountsService.createAccount(account);</span>
+<span class="fc" id="L87">	    account = new Account(&quot;Id-007&quot;, new BigDecimal(1500));</span>
+<span class="fc" id="L88">	    this.accountsService.createAccount(account);</span>
+<span class="fc" id="L89">		TestSuite suite = TestSuite.create(&quot;the_test_suite&quot;);</span>
+<span class="fc" id="L90">		suite.test(&quot;my_test_case_1&quot;, context -&gt; {</span>
+<span class="fc" id="L91">			this.testParallelTransaction(&quot;Id-006&quot;,&quot;Id-007&quot;, new BigDecimal(500));</span>
+<span class="fc" id="L92">		});</span>
+<span class="fc" id="L93">		suite.test(&quot;my_test_case_2&quot;, context -&gt; {</span>
+<span class="fc" id="L94">			this.testParallelTransaction(&quot;Id-006&quot;,&quot;Id-007&quot;, new BigDecimal(500));</span>
+<span class="fc" id="L95">		});</span>
+<span class="fc" id="L96">		suite.test(&quot;my_test_case_3&quot;, context -&gt; {</span>
+<span class="fc" id="L97">			this.testParallelTransaction(&quot;Id-006&quot;,&quot;Id-007&quot;, new BigDecimal(500));</span>
+<span class="fc" id="L98">		});</span>
+<span class="fc" id="L99">		suite.run(new TestOptions().addReporter(new ReportOptions().setTo(&quot;console&quot;)));</span>
+		
+<span class="fc" id="L101">		assertThat(this.accountsService.getAccountsRepository().getAccount(&quot;Id-006&quot;).getBalance()).isEqualByComparingTo(&quot;1500&quot;);</span>
+<span class="fc" id="L102">		assertThat(this.accountsService.getAccountsRepository().getAccount(&quot;Id-007&quot;).getBalance()).isEqualByComparingTo(&quot;3000&quot;);</span>
+		
+<span class="fc" id="L104">  }</span>
+  private void testParallelTransaction(String source, String destination, BigDecimal amount) {
+<span class="fc" id="L106">	  AccountTransaction AccountTransaction = new AccountTransaction(source,destination, amount);</span>
+<span class="fc" id="L107">	  this.accountsService.transaction(AccountTransaction);</span>
+<span class="fc" id="L108">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>accountoperation (14 Apr, 2018 8:18:49 AM)</div></body></html>

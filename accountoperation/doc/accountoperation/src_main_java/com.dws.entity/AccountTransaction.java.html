@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>AccountTransaction.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">accountoperation (14 Apr, 2018 8:18:49 AM)</a> &gt; <a href="../../index.html" class="el_group">accountoperation</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">com.dws.entity</a> &gt; <span class="el_source">AccountTransaction.java</span></div><h1>AccountTransaction.java</h1><pre class="source lang-java linenums">package com.dws.entity;
+
+import java.math.BigDecimal;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Data;
+<span class="pc bpc" id="L14" title="26 of 30 branches missed.">@Data</span>
+public class AccountTransaction {
+	
+	@NotNull
+	@NotEmpty
+	private final String fromAccountId;
+	@NotNull
+	@NotEmpty
+	private final String toAccountId;
+	@NotNull
+	@Min(value = 1, message = &quot;Initial balance must be positive.&quot;)
+	private final BigDecimal amount;
+	
+	@JsonCreator
+	public AccountTransaction(@JsonProperty(&quot;fromAccountId&quot;)String fromAccountId, @JsonProperty(&quot;toAccountId&quot;)String toAccountId, @JsonProperty(&quot;amount&quot;)BigDecimal amount) {
+<span class="fc" id="L29">		super();</span>
+<span class="fc" id="L30">		this.fromAccountId = fromAccountId;</span>
+<span class="fc" id="L31">		this.toAccountId = toAccountId;</span>
+<span class="fc" id="L32">		this.amount = amount;</span>
+<span class="fc" id="L33">	}</span>
+
+	public String getFromAccountId() {
+<span class="fc" id="L36">		return fromAccountId;</span>
+	}
+
+	public String getToAccountId() {
+<span class="fc" id="L40">		return toAccountId;</span>
+	}
+
+	public BigDecimal getAmount() {
+<span class="fc" id="L44">		return amount;</span>
+	}
+	
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>accountoperation (14 Apr, 2018 8:18:49 AM)</div></body></html>

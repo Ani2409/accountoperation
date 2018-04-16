@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>AccountsControllerTest.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">accountoperation (14 Apr, 2018 8:18:49 AM)</a> &gt; <a href="../../index.html" class="el_group">accountoperation</a> &gt; <a href="../index.html" class="el_bundle">src/test/java</a> &gt; <a href="index.source.html" class="el_package">com.dws.challenge</a> &gt; <span class="el_source">AccountsControllerTest.java</span></div><h1>AccountsControllerTest.java</h1><pre class="source lang-java linenums">package com.dws.challenge;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
+
+import java.math.BigDecimal;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.context.WebApplicationContext;
+
+import com.dws.config.MyMVCConfig;
+import com.dws.entity.Account;
+import com.dws.service.AccountsService;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes= {MyMVCConfig.class})
+@WebAppConfiguration
+<span class="fc" id="L30">public class AccountsControllerTest {</span>
+
+  private MockMvc mockMvc;
+
+  @Autowired
+  private AccountsService accountsService;
+
+  @Autowired
+  private WebApplicationContext webApplicationContext;
+
+  @Before
+  public void prepareMockMvc() {
+<span class="fc" id="L42">    this.mockMvc = webAppContextSetup(this.webApplicationContext).build();</span>
+
+    // Reset the existing accounts before each test.
+<span class="fc" id="L45">    accountsService.getAccountsRepository().clearAccounts();</span>
+<span class="fc" id="L46">  }</span>
+
+  @Test
+  public void createAccount() throws Exception {
+<span class="fc" id="L50">    this.mockMvc.perform(post(&quot;/v1/accounts&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L51">      .content(&quot;{\&quot;accountId\&quot;:\&quot;Id-123\&quot;,\&quot;balance\&quot;:1000}&quot;)).andExpect(status().isCreated());</span>
+
+<span class="fc" id="L53">    Account account = accountsService.getAccount(&quot;Id-123&quot;);</span>
+<span class="fc" id="L54">    assertThat(account.getAccountId()).isEqualTo(&quot;Id-123&quot;);</span>
+<span class="fc" id="L55">    assertThat(account.getBalance()).isEqualByComparingTo(&quot;1000&quot;);</span>
+<span class="fc" id="L56">  }</span>
+
+  @Test
+  public void createDuplicateAccount() throws Exception {
+<span class="fc" id="L60">    this.mockMvc.perform(post(&quot;/v1/accounts&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L61">      .content(&quot;{\&quot;accountId\&quot;:\&quot;Id-123\&quot;,\&quot;balance\&quot;:1000}&quot;)).andExpect(status().isCreated());</span>
+
+<span class="fc" id="L63">    this.mockMvc.perform(post(&quot;/v1/accounts&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L64">      .content(&quot;{\&quot;accountId\&quot;:\&quot;Id-123\&quot;,\&quot;balance\&quot;:1000}&quot;)).andExpect(status().isBadRequest());</span>
+<span class="fc" id="L65">  }</span>
+
+  @Test
+  public void createAccountNoAccountId() throws Exception {
+<span class="fc" id="L69">    this.mockMvc.perform(post(&quot;/v1/accounts&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L70">      .content(&quot;{\&quot;balance\&quot;:1000}&quot;)).andExpect(status().isBadRequest());</span>
+<span class="fc" id="L71">  }</span>
+
+  @Test
+  public void createAccountNoBalance() throws Exception {
+<span class="fc" id="L75">    this.mockMvc.perform(post(&quot;/v1/accounts&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L76">      .content(&quot;{\&quot;accountId\&quot;:\&quot;Id-123\&quot;}&quot;)).andExpect(status().isBadRequest());</span>
+<span class="fc" id="L77">  }</span>
+
+  @Test
+  public void createAccountNoBody() throws Exception {
+<span class="fc" id="L81">    this.mockMvc.perform(post(&quot;/v1/accounts&quot;).contentType(MediaType.APPLICATION_JSON))</span>
+<span class="fc" id="L82">      .andExpect(status().isBadRequest());</span>
+<span class="fc" id="L83">  }</span>
+
+  @Test
+  public void createAccountNegativeBalance() throws Exception {
+<span class="fc" id="L87">    this.mockMvc.perform(post(&quot;/v1/accounts&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L88">      .content(&quot;{\&quot;accountId\&quot;:\&quot;Id-123\&quot;,\&quot;balance\&quot;:-1000}&quot;)).andExpect(status().isBadRequest());</span>
+<span class="fc" id="L89">  }</span>
+
+  @Test
+  public void createAccountEmptyAccountId() throws Exception {
+<span class="fc" id="L93">    this.mockMvc.perform(post(&quot;/v1/accounts&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L94">      .content(&quot;{\&quot;accountId\&quot;:\&quot;\&quot;,\&quot;balance\&quot;:1000}&quot;)).andExpect(status().isBadRequest());</span>
+<span class="fc" id="L95">  }</span>
+
+  @Test
+  public void getAccount() throws Exception {
+<span class="fc" id="L99">    String uniqueAccountId = &quot;Id-&quot; + System.currentTimeMillis();</span>
+<span class="fc" id="L100">    Account account = new Account(uniqueAccountId, new BigDecimal(&quot;123.45&quot;));</span>
+<span class="fc" id="L101">    this.accountsService.createAccount(account);</span>
+<span class="fc" id="L102">    this.mockMvc.perform(get(&quot;/v1/accounts/&quot; + uniqueAccountId))</span>
+<span class="fc" id="L103">      .andExpect(status().isOk())</span>
+<span class="fc" id="L104">      .andExpect(</span>
+<span class="fc" id="L105">        content().string(&quot;{\&quot;accountId\&quot;:\&quot;&quot; + uniqueAccountId + &quot;\&quot;,\&quot;balance\&quot;:123.45}&quot;));</span>
+<span class="fc" id="L106">  }</span>
+  
+  @Test
+  public void testTransaction() throws Exception {
+<span class="fc" id="L110">	  this.mockMvc.perform(post(&quot;/v1/accounts&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L111">		      .content(&quot;{\&quot;accountId\&quot;:\&quot;Id-002\&quot;,\&quot;balance\&quot;:1000}&quot;)).andExpect(status().isCreated());</span>
+<span class="fc" id="L112">	  this.mockMvc.perform(post(&quot;/v1/accounts&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L113">		      .content(&quot;{\&quot;accountId\&quot;:\&quot;Id-003\&quot;,\&quot;balance\&quot;:1000}&quot;)).andExpect(status().isCreated());</span>
+	  
+<span class="fc" id="L115">    this.mockMvc.perform(post(&quot;/v1/accounts/transaction&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L116">      .content(&quot;{\&quot;fromAccountId\&quot;:\&quot;Id-002\&quot;,\&quot;toAccountId\&quot;:\&quot;Id-003\&quot;,\&quot;amount\&quot;:500}&quot;)).andExpect(status().isAccepted());</span>
+
+<span class="fc" id="L118">    Account drAccount = accountsService.getAccount(&quot;Id-002&quot;);</span>
+<span class="fc" id="L119">    Account crAccount = accountsService.getAccount(&quot;Id-003&quot;);</span>
+<span class="fc" id="L120">    assertThat(drAccount.getBalance()).isEqualByComparingTo(&quot;500&quot;);</span>
+<span class="fc" id="L121">    assertThat(crAccount.getBalance()).isEqualByComparingTo(&quot;1500&quot;);</span>
+<span class="fc" id="L122">  }</span>
+  
+  @Test
+  public void testTransactionBadRequest() throws Exception {
+<span class="fc" id="L126">	  this.mockMvc.perform(post(&quot;/v1/accounts&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L127">		      .content(&quot;{\&quot;accountId\&quot;:\&quot;Id-002\&quot;,\&quot;balance\&quot;:1000}&quot;)).andExpect(status().isCreated());</span>
+<span class="fc" id="L128">	  this.mockMvc.perform(post(&quot;/v1/accounts&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L129">		      .content(&quot;{\&quot;accountId\&quot;:\&quot;Id-003\&quot;,\&quot;balance\&quot;:1000}&quot;)).andExpect(status().isCreated());</span>
+	  
+<span class="fc" id="L131">    this.mockMvc.perform(post(&quot;/v1/accounts/transaction&quot;).contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L132">      .content(&quot;{\&quot;fromAccountId\&quot;:\&quot;Id-002\&quot;,\&quot;toAccountId\&quot;:\&quot;Id-003\&quot;,\&quot;amount\&quot;:1500}&quot;)).andExpect(status().isBadRequest());</span>
+
+<span class="fc" id="L134">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>accountoperation (14 Apr, 2018 8:18:49 AM)</div></body></html>
