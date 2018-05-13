@@ -3,9 +3,6 @@ package com.dws.repository;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +38,7 @@ public class AccountsRepositoryInMemory implements AccountsRepository {
 	
 	@Override
 	public boolean transcation(AccountTransaction accountTransaction) throws RuntimeException {
-		ReadWriteLock lock = new ReentrantReadWriteLock();
-		Lock writeLock = lock.writeLock();
 		try {
-			writeLock.lock();
 			LOGGER.info("Account operation started!");
 			Account fromAccount = getAccount(accountTransaction.getFromAccountId());
 			Account toAccount = getAccount(accountTransaction.getToAccountId());
@@ -67,7 +61,6 @@ public class AccountsRepositoryInMemory implements AccountsRepository {
 			LOGGER.info("Transaction Interupted!");
 			throw ex;
 		}finally {
-			writeLock.unlock();
 		}
 		
 	}
